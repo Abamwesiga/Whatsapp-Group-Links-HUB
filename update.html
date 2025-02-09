@@ -172,15 +172,75 @@
             transform: scale(1.1);
         }
     </style>
-     <script async src="https://www.googletagmanager.com/gtag/js?id=G-CYKFB1BGKC"></script>
-     <script>
-       window.dataLayer = window.dataLayer || [];
-       function gtag(){dataLayer.push(arguments);}
-       gtag('js', new Date());
-     
-       gtag('config', 'G-CYKFB1BGKC');
-     </script>
-     <script id="usercentrics-cmp" src="https://app.usercentrics.eu/browser-ui/latest/loader.js" data-settings-id="xqqEPk8rsGwdag" async></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-CYKFB1BGKC"></script>
+    <script>
+  const API_KEY = "$2a$10$FFLrTRf05gOVI5oW9LX9aORnxUR1XefnTYB5ztH7SdKt0vU86okIm"; // Replace with your JSONBin.io API key
+const INITIAL_DATA = { groups: [] }; // Initial data structure
+
+fetch("https://api.jsonbin.io/v3/b", {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json",
+        "X-Master-Key": $2a$10$FFLrTRf05gOVI5oW9LX9aORnxUR1XefnTYB5ztH7SdKt0vU86okIm
+    },
+    body: JSON.stringify(INITIAL_DATA)
+})
+.then(response => response.json())
+.then(data => {
+    console.log("Bin created! Bin ID:67a8ffcaacd3cb34a8dba93e", data.metadata.id);
+})
+.catch(error => console.error("Error creating bin:", error));
+ // Function to fetch group links
+ async function fetchGroups() {
+            const response = await fetch(API_URL, {
+                headers: {
+                    "X-Master-Key": API_KEY
+                }
+            });
+            const data = await response.json();
+            console.log("Fetched data:", data); // Debugging
+            return data.record?.groups || [];
+        }
+
+        // Function to add a group link
+        async function addGroup(groupLink) {
+            const groups = await fetchGroups();
+            groups.push(groupLink);
+
+            await fetch(API_URL, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Master-Key": API_KEY
+                },
+                body: JSON.stringify({ groups })
+            });
+        }
+
+        // Function to display groups
+        async function displayGroups() {
+            const groups = await fetchGroups();
+            const groupList = document.getElementById('groupList');
+            groupList.innerHTML = ''; // Clear the list
+            groups.forEach(group => {
+                const li = document.createElement('li');
+                li.textContent = group;
+                groupList.appendChild(li);
+            });
+        }
+
+        // Form submission to add a group
+        document.getElementById('groupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const groupLink = document.getElementById('groupLink').value;
+            await addGroup(groupLink);
+            document.getElementById('groupLink').value = ''; // Clear the input
+            await displayGroups(); // Refresh the list
+        });
+
+        // Initial display of groups
+        displayGroups();
+    </script>
 </head>
 <body>
     <header>
@@ -224,79 +284,5 @@
 
     <!-- Floating Action Button -->
     <button class="fab" onclick="scrollToGroups()">+</button>
-
-    <script>
-        // Load groups from localStorage when the page loads
-        document.addEventListener('DOMContentLoaded', function () {
-            loadGroups();
-        });
-
-        // Handle form submission
-        document.getElementById('groupForm').addEventListener('submit', function (event) {
-            event.preventDefault();
-            const groupTitle = document.getElementById('groupTitle').value;
-            const groupLink = document.getElementById('groupLink').value;
-
-            // Basic WhatsApp group link validation
-            if (!groupLink.includes('chat.whatsapp.com')) {
-                alert('Please enter a valid WhatsApp group link.');
-                return;
-            }
-
-            if (groupTitle && groupLink) {
-                addGroupLink(groupTitle, groupLink);
-                saveGroup(groupTitle, groupLink); // Save to localStorage
-                document.getElementById('groupTitle').value = '';
-                document.getElementById('groupLink').value = '';
-            }
-        });
-
-        // Function to add a group link to the DOM
-        function addGroupLink(title, link) {
-            const groupList = document.getElementById('groupList');
-            const groupItem = document.createElement('div');
-            groupItem.classList.add('group-item');
-
-            groupItem.innerHTML = `
-                <div>
-                    <strong>${title}</strong><br>
-                    <a href="${link}" target="_blank">${link}</a>
-                </div>
-                <button onclick="copyLink('${link}')">Copy Link</button>
-            `;
-
-            groupList.appendChild(groupItem);
-        }
-
-        // Function to copy a link to the clipboard
-        function copyLink(link) {
-            navigator.clipboard.writeText(link)
-                .then(() => alert('Link copied to clipboard!'))
-                .catch(() => alert('Failed to copy link.'));
-        }
-
-        // Function to scroll to the groups section
-        function scrollToGroups() {
-            document.getElementById('groups').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // Function to save a group to localStorage
-        function saveGroup(title, link) {
-            let groups = JSON.parse(localStorage.getItem('groups')) || [];
-            groups.push({ title, link });
-            localStorage.setItem('groups', JSON.stringify(groups));
-        }
-
-        // Function to load groups from localStorage
-        function loadGroups() {
-            let groups = JSON.parse(localStorage.getItem('groups')) || [];
-            const groupList = document.getElementById('groupList');
-            groupList.innerHTML = ''; // Clear the list before loading
-
-            groups.forEach(group => {
-                addGroupLink(group.title, group.link);
-            });
-        }
-    </script>
 </body>
 </html>
